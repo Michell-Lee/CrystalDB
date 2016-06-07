@@ -6,10 +6,17 @@ import requests
 from bs4 import BeautifulSoup
 from time import localtime, strftime
 
-DEBUG = True
+DEBUG = False
 
-htmlhead = '<html>\n<body>\n<meta http-equiv="content-type" content="text/html; charset=utf-8" />\n'
-htmltail = '</body>\n</html>'
+htmlhead = '<html><body>\n\t<meta http-equiv="content-type" content="text/html; charset=utf-8" />\n'
+htmlstyle = '<style type="text/css">\n' \
+            '\th2 {font-family: 微軟正黑體; font-size:24;}\n' \
+            '\tbody {font-family:微軟正黑體; font-size:12}\n' \
+            '\ttable {border: 6; font-family: 微軟正黑體; font-size:14; text-align: left;}\n' \
+            '\tth {background-color: gray;}\n' \
+            '\ttd {border-bottom:1 solid #000000;} .exp {color:#D3D3D3;}\n'\
+            '</style>\n'
+htmltail = '</body></html>'
 
 if not DEBUG:
     index_source = r'D:\Google Drive\Crystal_DB\index.source'
@@ -55,8 +62,8 @@ def parse_source_to_html():
         f.close()
 
     html = []
-    html.append(htmlhead)
-    html.append('Last update: ' + strftime('%Y-%m-%d %H:%M:%S\n', localtime()))
+    html.append(htmlhead + htmlstyle.encode('utf-8').decode('ISO8859-1'))
+    html.append('Last updated time: ' + strftime('%Y-%m-%d %H:%M:%S\n', localtime()))
 
     for string in job_database:
         if '_COM_' in string:
@@ -71,12 +78,18 @@ def parse_source_to_html():
             if webfound:
                 html.append('</a>')
             html.append('</h2>\n')
-            html.append('<pre>\n')
+            html.append('<table>\n')
         if '_JOB_' in string:
-            jobdsc = '{:<70} {:<20} {}'.format(string[5:].rstrip('\n').ljust(70), job_database[job_database.index(string)+1].rstrip('\n'), job_database[job_database.index(string)+2])
-            html.append(jobdsc)
+            html.append('\t<tr>\n')
+            html.append('\t\t<td width=600>' + string[5:].rstrip('\n') + '</td>\n')
+            html.append('\t\t<td width=200>' + job_database[job_database.index(string)+1].rstrip('\n') + '</td>\n')
+            if job_database[job_database.index(string)+2].rstrip('\n') != '_STOP_':
+                html.append('\t\t<td width=200>' + job_database[job_database.index(string)+2].rstrip('\n') + '</td>\n')
+            else:
+                html.append('\t\t<td width=200, class=\'exp\'>' + job_database[job_database.index(string)+2].rstrip('\n') + '</td>\n')
+            html.append('\t</tr>\n')
         if '_END_' in string:
-            html.append('</pre>\n')
+            html.append('</table>\n')
             html.append('<hr>\n')
 
     html.append(htmltail)
