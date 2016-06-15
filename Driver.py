@@ -51,9 +51,11 @@ def is_hot_job(job, page):
 def totalpages(web):
     response = requests.get(str(web))
     soup = BeautifulSoup(response.text.encode('utf-8'), 'html.parser')
-
-    tags = soup.find_all('input', attrs={"name": "totalpage"})[0]
-    return int(tags.get('value'))
+    try:
+        tags = soup.find_all('input', attrs={"name": "totalpage"})[0]
+        return int(tags.get('value'))
+    except IndexError:
+        return 0
 
 
 def parse_source_to_html():
@@ -99,7 +101,12 @@ def parse_source_to_html():
 
 
 def parse_html_content(webaddr):
-    for page in range(1, totalpages(webaddr) + 1):
+
+    totalp = totalpages(webaddr)
+    if totalp == 0:
+        return
+
+    for page in range(1, totalp + 1):
         #print('page'+str(page))
         webpage = webaddr + '&page=' + str(page) + '#info06s'
         response = requests.get(webpage)
