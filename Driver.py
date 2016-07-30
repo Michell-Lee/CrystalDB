@@ -53,8 +53,10 @@ def totalpages(web):
     soup = BeautifulSoup(response.text.encode('utf-8'), 'html.parser')
     try:
         tags = soup.find_all('input', attrs={"name": "totalpage"})[0]
+        #print('total page = %s' % tags.get('value'))
         return int(tags.get('value'))
     except IndexError:
+        #print('total page = 1')
         return 0
 
 
@@ -156,6 +158,7 @@ def parse_html_content(webaddr):
             current_compony = f.readlines()
             f.close()
     except FileNotFoundError:
+        print('tmp.source not found !!!')
         return
 
     # It is a new company, copy all contents to the index.source
@@ -188,7 +191,7 @@ def parse_html_content(webaddr):
         for jobrecord in compony_data:
             if '_JOB_' in jobrecord and jobrecord not in current_compony:
                 # job is closed
-                if compony_data[compony_data.index(jobrecord) + 2].lstrip('\n') is '_STOP_':
+                if compony_data[compony_data.index(jobrecord) + 2].rstrip('\n') == '_STOP_':
                     compony_data[compony_data.index(jobrecord) + 2] = strftime("%Y-%m-%d\n", localtime())
 
         webfound = False
